@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My Bookings</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f8;
+            padding-top: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .1);
+            border-left: 6px solid #ff4d4d;
+        }
+
+        h3 {
+            margin: 0 0 10px 0;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            background: #ff4d4d;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #cc0000;
+        }
+
+        .ticket {
+            display: flex;
+            justify-content: space-between;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .1);
+            overflow: hidden;
+        }
+
+        .left {
+            padding: 20px;
+            width: 70%;
+        }
+
+        .footer {
+            background: #0f172a;
+            color: #cbd5f5;
+            padding: 40px 60px;
+            
+        }
+
+        .footer-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+
+        .footer h3,
+        .footer h4 {
+            color: #38bdf8;
+        }
+
+        .footer a {
+            color: #cbd5f5;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #38bdf8;
+        }
+
+        .copyright {
+            margin-top: 20px;
+            font-size: 13px;
+            opacity: .7;
+        }
+
+        .poster {
+            width: 180px;
+        }
+
+        .poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .right {
+            background: #494646;
+            color: white;
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .right::before,
+        .right::after {
+            content: "";
+            width: 20px;
+            height: 20px;
+            background: #f4f6f8;
+            border-radius: 50%;
+            position: absolute;
+            left: -10px;
+        }
+
+        .right::before {
+            top: -10px;
+        }
+
+        .right::after {
+            bottom: -10px;
+        }
+
+        .theatre-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+</head>
+
+<body>
+
+    <h2>My Bookings</h2>
+    <div id="list">Loading...</div>
+
+    <script>
+
+        fetch("../backend/get_user_booking.php")
+            .then(res => res.json())
+            .then(data => {
+
+                const div = document.getElementById("list");
+                div.innerHTML = "";
+
+                if (!data || data.length === 0) {
+                    div.innerHTML = "No bookings yet.";
+                    return;
+                }
+
+                data.forEach(b => {
+
+                    const seatsFormatted = b.seats.split(',').join(', ');
+                    const originalPrice = parseFloat(b.total_price);
+                    const discount = originalPrice * 0.20;
+                    const finalPrice = originalPrice - discount;
+
+                    div.innerHTML += `
+    <div class="ticket">
+        <div class="poster">
+            <img src="../${b.poster}" alt="${b.title}">
+        </div>
+        <div class="left">
+            <h2>${b.title}</h2>
+            <p><strong>Theatre:</strong> ${b.theatre_name}</p>
+            <p><strong>Date:</strong> ${b.show_date}</p>
+            <p><strong>Time:</strong> ${b.show_time}</p>
+            <p><strong>Seats:</strong> ${seatsFormatted}</p>
+            <p>
+    <strong>Total:</strong> 
+    <span style="text-decoration:line-through;color:gray;">
+        Rs. ${originalPrice.toFixed(2)}
+    </span>
+    <span style="color:green;font-weight:bold;margin-left:8px;">
+        Rs. ${finalPrice.toFixed(2)}
+    </span>
+</p>
+<p style="color:red;font-weight:bold;">
+    20% OFF Applied
+</p>
+
+<button class="download-btn"
+    data-id="${b.booking_id}"
+    data-title="${b.title}"
+    data-theatre="${b.theatre_name}"
+    data-date="${b.show_date}"
+    data-time="${b.show_time}"
+    data-seats="${seatsFormatted}"
+    data-original="${originalPrice}"
+data-final="${finalPrice}">
+    Download Ticket
+</button>
+
+        </div>
+
+        <div class="right">
+            <div class="theatre-name">${b.theatre_name}</div>
+            <div class="qr-box" id="qr-${b.booking_id}"></div>
+        </div>
+    </div>
+    `;
+
+
+                });
+                document.querySelectorAll(".qr-box").forEach(box => {
+
+                    const bookingId = box.dataset.id;
+
+                    new QRCode(box, {
+                        text: "Booking ID: " + bookingId,
+                        width: 80,
+                        height: 80
+                    });
+
+                });
+
+                document.querySelectorAll(".download-btn").forEach(btn => {
+
+                    btn.addEventListener("click", function () {
+
+                        downloadTicket(
+                            this.dataset.id,
+                            this.dataset.title,
+                            this.dataset.theatre,
+                            this.dataset.date,
+                            this.dataset.time,
+                            this.dataset.seats,
+                            this.dataset.original,
+                            this.dataset.final
+                        );
+
+                    });
+
+                });
+
+
+
+            });
+
+
+        function downloadTicket(id, title, theatre, date, time, seats, originalPrice, finalPrice) {
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Ticket Border
+            doc.rect(10, 10, 190, 110);
+
+            doc.setFontSize(18);
+            doc.text("CINEMA TICKET", 65, 25);
+
+            doc.setFontSize(12);
+            doc.text("Booking ID: #" + id, 20, 40);
+            doc.text("Movie: " + title, 20, 50);
+            doc.text("Theatre: " + theatre, 20, 60);
+            doc.text("Date: " + date, 20, 70);
+            doc.text("Time: " + time, 20, 80);
+            doc.text("Seats: " + seats, 20, 90);
+            doc.text("Original Price: Rs. " + originalPrice, 20, 95);
+            doc.text("Discount: 20% OFF", 20, 105);
+            doc.text("Final Paid: Rs. " + finalPrice, 20, 115);
+
+
+            const qrDiv = document.createElement("div");
+            qrDiv.style.position = "absolute";
+            qrDiv.style.left = "-9999px";
+            document.body.appendChild(qrDiv);
+
+            const qr = new QRCode(qrDiv, {
+                text: `Booking ID: ${id}\nMovie: ${title}\nSeats: ${seats}`,
+                width: 100,
+                height: 100
+            });
+
+            setTimeout(() => {
+
+                const imgElement = qrDiv.querySelector("img");
+
+                if (imgElement) {
+                    doc.addImage(imgElement.src, "PNG", 140, 45, 40, 40);
+                }
+
+                doc.save("Ticket_" + id + ".pdf");
+
+                document.body.removeChild(qrDiv);
+
+            }, 800);
+        }
+
+    </script>
+
+</body>
+<footer class="footer">
+    <div class="footer-container">
+
+        <div>
+            <h3>Movie-Dekh</h3>
+            <p>Book tickets instantly. Fast, secure and simple.</p>
+        </div>
+
+        <div>
+            <h4>Quick Links</h4>
+            <p><a href="index.html">Home</a></p>
+            <p><a href="my_bookings.html">My Bookings</a></p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>Email: support@moviedekh.com</p>
+            <p>Phone: +91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="copyright">
+        &copy 2026 Movie-Dekh. All rights reserved.
+    </div>
+</footer>
+
+
+</html>

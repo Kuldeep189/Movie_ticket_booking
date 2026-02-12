@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Movie-Dekh</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Base */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f1f5f9, #eef2ff);
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 40px;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            overflow-y: auto;
+            z-index: 1000;
+
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: #38bdf8;
+        }
+
+        .nav-group {
+            margin-bottom: 30px;
+        }
+
+        .nav-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            color: #cbd5f5;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background: #1e293b;
+            color: #38bdf8;
+        }
+
+        #accountSection {
+            margin-top: auto;
+        }
+
+        .content {
+            margin-left: 240px;
+            padding: 40px;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .stats {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .movies {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+
+        .movie-card {
+            background: white;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .movie-status {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            /* change if needed */
+        }
+
+        .brand img {
+            width: 55px;
+            height: 55px;
+            object-fit: contain;
+        }
+
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+        }
+
+        .modal-box input,
+        .modal-box button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px;
+        }
+
+        .close-btn {
+            background: #e5e7eb;
+        }
+
+        .footer {
+            background: #0f172a;
+            color: #cbd5f5;
+            padding: 40px 60px;
+            margin-left: 240px;
+            /* match sidebar */
+        }
+
+        .footer-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+
+        .footer h3,
+        .footer h4 {
+            color: #38bdf8;
+        }
+
+        .footer a {
+            color: #cbd5f5;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #38bdf8;
+        }
+
+        .copyright {
+            margin-top: 20px;
+            font-size: 13px;
+            opacity: .7;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="app">
+        <div class="sidebar">
+            <div class="brand">
+                <img src="icon.png" alt="Movie Dekh Logo">
+                <span>Movie - Dekh</span>
+            </div>
+
+
+            <div class="nav-group">
+                <div class="nav-title">Browse</div>
+                <a class="nav-item">Now Showing</a>
+                <a class="nav-item">Trending</a>
+                <a class="nav-item">Upcoming</a>
+            </div>
+
+            <div class="nav-group" id="accountSection">
+                <div class="nav-title">Account</div>
+                <a class="nav-item" href="auth.html" id="authLink">Login / Register</a>
+                <div class="nav-item" id="welcomeUser" style="display:none;"></div>
+                <a class="nav-item" href="my_bookings.html" id="myBookingLink" style="display:none;">My Bookings</a>
+                <a class="nav-item" id="logoutBtn" style="display:none;">Logout</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <h1>Movie Ticket Booking</h1>
+            <div id="stats" class="stats">Loading...</div>
+
+            <h2>Trending Movies / Now Showing</h2>
+            <div id="trending" class="movies"></div>
+
+            <h2>Upcoming Movies</h2>
+            <div id="upcoming" class="movies"></div>
+        </div>
+    </div>
+
+    <div id="loginModal" class="modal">
+        <div class="modal-box">
+            <h3>Login</h3>
+            <input id="loginEmail" placeholder="Email">
+            <input id="loginPassword" type="password" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <button class="close-btn" onclick="closeLogin()">Cancel</button>
+        </div>
+    </div>
+    <div id="registerModal" class="modal">
+        <div class="modal-box">
+            <h3>Create Account</h3>
+            <input id="regName" placeholder="Full Name">
+            <input id="regEmail" placeholder="Email">
+            <input id="regPassword" type="password" placeholder="Password">
+            <button onclick="registerUser()">Register</button>
+            <button class="close-btn" onclick="closeRegister()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const welcomeUser = document.getElementById("welcomeUser");
+            const logoutBtn = document.getElementById("logoutBtn");
+            const myBookingLink = document.getElementById("myBookingLink");
+            const stats = document.getElementById("stats");
+            const trending = document.getElementById("trending");
+            const upcoming = document.getElementById("upcoming");
+
+            // ===== CHECK SESSION =====
+            function checkSession() {
+                fetch("../backend/session.php")
+                    .then(res => res.json())
+                    .then(data => {
+
+                        const authLink = document.getElementById("authLink");
+
+                        if (data.loggedIn) {
+                            welcomeUser.style.display = "block";
+                            welcomeUser.innerText = "Hey, " + data.name;
+
+                            logoutBtn.style.display = "block";
+                            myBookingLink.style.display = "block";
+
+                            authLink.style.display = "none";   // 🔥 Hide Login/Register
+                        } else {
+                            welcomeUser.style.display = "none";
+                            logoutBtn.style.display = "none";
+                            myBookingLink.style.display = "none";
+
+                            authLink.style.display = "block";  // 🔥 Show when logged out
+                        }
+
+                    });
+            }
+
+
+            // ===== LOGOUT =====
+            logoutBtn.addEventListener("click", function () {
+                fetch("../backend/logout.php")
+                    .then(() => location.reload());
+            });
+
+            checkSession();
+
+            // ===== LOAD MOVIES =====
+            fetch("../backend/get_movies.php")
+                .then(res => res.json())
+                .then(data => {
+
+                    stats.innerText = `Total Movies Available: ${data.length}`;
+
+                    data.forEach(movie => {
+
+                        const card = document.createElement("div");
+                        card.className = "movie-card";
+
+                        card.innerHTML = `
+                <img src="../${movie.poster}" 
+                     alt="${movie.title}"
+                     style="width:100%;height:320px;object-fit:cover;border-radius:8px;">
+                <strong>${movie.title}</strong>
+                <div>${movie.duration} mins</div>
+                <div class="movie-status">${movie.status}</div>
+            `;
+
+                        card.onclick = () => {
+                            window.location.href = `movie.html?movie_id=${movie.id}`;
+                        };
+
+                        if (movie.status === "TRENDING" || movie.status === "NOW_SHOWING") {
+                            trending.appendChild(card);
+                        } else if (movie.status === "UPCOMING") {
+                            upcoming.appendChild(card);
+                        }
+
+                    });
+
+                })
+                .catch(err => console.error("Movie load error:", err));
+
+        });
+    </script>
+
+
+</body>
+<footer class="footer">
+    <div class="footer-container">
+
+        <div>
+            <h3>Movie-Dekh</h3>
+            <p>Book tickets instantly. Fast, secure and simple.</p>
+        </div>
+
+        <div>
+            <h4>Quick Links</h4>
+            <p><a href="index.html">Home</a></p>
+            <p><a href="my_bookings.html">My Bookings</a></p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>Email: support@moviedekh.com</p>
+            <p>Phone: +91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="copyright">
+       &copy 2026 Movie-Dekh. All rights reserved.
+    </div>
+</footer>
+
+</html>

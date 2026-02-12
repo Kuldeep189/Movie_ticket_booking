@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Seat Booking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .checkout-btn {
+      margin-top: 12px;
+      padding: 12px 26px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, .15);
+      transition: all .2s ease;
+    }
+
+    .checkout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, .2);
+    }
+
+    .checkout-btn:active {
+      transform: scale(.98);
+    }
+
+    .aisle-gap {
+      width: 89px;
+    }
+
+    .hall {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .row-label {
+      width: 20px;
+      font-weight: bold;
+    }
+
+    .seat {
+      width: 35px;
+      height: 35px;
+      margin: 4px;
+      line-height: 35px;
+      text-align: center;
+      border-radius: 4px;
+      border: 1px solid #2e7d32;
+      background: #e8f5e9;
+      color: #2e7d32;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .seat:hover {
+      background: #c8e6c9;
+    }
+
+    .booked {
+      background: #e0e0e0;
+      color: #777;
+      border-color: #999;
+      cursor: not-allowed;
+    }
+
+    .screen {
+      margin-top: 25px;
+      padding: 10px;
+      text-align: center;
+      background: #e3f2fd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .legend {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .legend {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 14px;
+      align-items: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-box {
+      width: 18px;
+      height: 18px;
+      border-radius: 3px;
+      border: 1px solid;
+    }
+
+    .legend-available {
+      background: #e8f5e9;
+      border-color: #2e7d32;
+    }
+
+    .legend-booked {
+      background: #e0e0e0;
+      border-color: #999;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Select Your Seats</h2>
+  <p style="text-align:center;color:#555;">
+    Booking seats for selected show
+  </p>
+
+  <div class="hall">
+    <div class="seat-wrapper">
+      <div id="hall"></div>
+      <div class="screen">SCREEN THIS WAY</div>
+    </div>
+  </div>
+
+
+
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-box legend-available"></div>
+      <span>Available</span>
+    </div>
+
+    <div class="legend-item">
+      <div class="legend-box legend-booked"></div>
+      <span>Booked</span>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:20px;">
+    <div id="selectedSeats">Selected: None</div>
+    <button class="checkout-btn" onclick="goCheckout()">
+      Proceed To Checkout
+    </button>
+
+  </div>
+
+
+
+  <script>
+    let selectedSeats = [];
+    const params = new URLSearchParams(window.location.search);
+    const showId = params.get("show_id");
+    const movieId = params.get("movie_id"); // IMPORTANT
+
+    // FETCH SEATS
+    fetch("../backend/get_seats.php?show_id=" + showId)
+      .then(res => res.json())
+      .then(data => {
+
+        const hall = document.getElementById("hall");
+        hall.innerHTML = "";
+
+        const seatMap = {};
+
+        data.forEach(seat => {
+          const row = seat.seat_no.charAt(0);
+          if (!seatMap[row]) seatMap[row] = [];
+          seatMap[row].push(seat);
+        });
+
+        // Sort seats numerically inside each row
+        Object.keys(seatMap).sort().forEach(row => {
+
+          seatMap[row].sort((a, b) => {
+            return parseInt(a.seat_no.slice(1)) - parseInt(b.seat_no.slice(1));
+          });
+
+          const rowDiv = document.createElement("div");
+          rowDiv.className = "row";
+
+          const label = document.createElement("div");
+          label.className = "row-label";
+          label.innerText = row;
+          rowDiv.appendChild(label);
+
+          seatMap[row].forEach((seat, index) => {
+
+            if (index === 6 && row.charCodeAt(0) >= "C".charCodeAt(0)) {
+              const gap = document.createElement("div");
+              gap.className = "aisle-gap";
+              rowDiv.appendChild(gap);
+            }
+
+            const seatDiv = document.createElement("div");
+            seatDiv.className = "seat";
+            seatDiv.innerText = seat.seat_no;
+
+            if (seat.status === "BOOKED") {
+              seatDiv.classList.add("booked");
+            } else {
+              seatDiv.onclick = () => toggleSeat(seatDiv, seat.seat_no);
+            }
+
+            rowDiv.appendChild(seatDiv);
+          });
+
+          hall.appendChild(rowDiv);
+        });
+      });
+
+    function toggleSeat(el, seatNo) {
+
+      if (selectedSeats.includes(seatNo)) {
+        selectedSeats = selectedSeats.filter(s => s !== seatNo);
+        el.style.background = "#e8f5e9";
+      } else {
+        selectedSeats.push(seatNo);
+        el.style.background = "#81c784";
+      }
+
+      document.getElementById("selectedSeats").innerText =
+        selectedSeats.length ? "Selected: " + selectedSeats.join(", ") : "Selected: None";
+    }
+
+    function goCheckout() {
+
+      if (selectedSeats.length == 0) {
+        alert("Select at least 1 seat");
+        return;
+      }
+
+      // PASS movie_id ALSO
+      window.location.href =
+        `checkout.html?show_id=${showId}&movie_id=${movieId}&seats=${selectedSeats.join(",")}`;
+    }
+  </script>
+
+
+</body>
+</html>
