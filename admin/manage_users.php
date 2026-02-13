@@ -14,7 +14,7 @@ if(isset($_GET['delete'])){
         $stmt->bind_param("i", $delete_id);
         $stmt->execute();
     }
-
+ 
     header("Location: manage_users.php");
     exit;
 }
