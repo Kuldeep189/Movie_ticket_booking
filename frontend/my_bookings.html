@@ -47,44 +47,16 @@
             box-shadow: 0 6px 18px rgba(0, 0, 0, .1);
             overflow: hidden;
         }
+        .book{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight:bolder
+        }
 
         .left {
             padding: 20px;
             width: 70%;
-        }
-
-        .footer {
-            background: #0f172a;
-            color: #cbd5f5;
-            padding: 40px 60px;
-            
-        }
-
-        .footer-container {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 40px;
-        }
-
-        .footer h3,
-        .footer h4 {
-            color: #38bdf8;
-        }
-
-        .footer a {
-            color: #cbd5f5;
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            color: #38bdf8;
-        }
-
-        .copyright {
-            margin-top: 20px;
-            font-size: 13px;
-            opacity: .7;
         }
 
         .poster {
@@ -141,7 +113,7 @@
 
 <body>
 
-    <h2>My Bookings</h2>
+    <h2 class="book">My Bookings</h2>
     <div id="list">Loading...</div>
 
     <script>
@@ -300,32 +272,6 @@ data-final="${finalPrice}">
     </script>
 
 </body>
-<footer class="footer">
-    <div class="footer-container">
-
-        <div>
-            <h3>Movie-Dekh</h3>
-            <p>Book tickets instantly. Fast, secure and simple.</p>
-        </div>
-
-        <div>
-            <h4>Quick Links</h4>
-            <p><a href="index.html">Home</a></p>
-            <p><a href="my_bookings.html">My Bookings</a></p>
-        </div>
-
-        <div>
-            <h4>Contact</h4>
-            <p>Email: support@moviedekh.com</p>
-            <p>Phone: +91 9876543210</p>
-        </div>
-
-    </div>
-
-    <div class="copyright">
-        &copy 2026 Movie-Dekh. All rights reserved.
-    </div>
-</footer>
 
 
 </html>

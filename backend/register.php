@@ -40,7 +40,7 @@ $insert = $conn->query("
 ");
 
 if ($insert) {
-    echo json_encode(["success" => true]);
+    echo json_encode(["message" => "Registration successful"]);
 } else {
     echo json_encode(["error" => "Registration failed"]);
 }
