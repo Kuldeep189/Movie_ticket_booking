@@ -3,6 +3,7 @@ Users can browse movies, select shows, book seats, and download tickets with QR 
 The system also includes a role-based admin panel for managing movies, shows, and users.
 
 🚀 Features
+
 👤 User Side
 
 User Registration & Login
@@ -40,3 +41,4 @@ MySQL
 Tools:-
 XAMPP
 Git & GitHub
+
